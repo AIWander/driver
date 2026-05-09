@@ -9,20 +9,30 @@ model_id = "openai/gpt-oss-20b"
 strip_thinking_tags = true
 max_tokens = 4096
 temperature = 0.7
+mcp_servers = ["hands", "workflow"]
+tool_filter = [
+  "browser_attach", "browser_navigate", "browser_extract_content", "browser_get_text",
+  "browser_a11y_snapshot", "browser_click", "browser_type", "browser_screenshot",
+  "browser_new_tab", "browser_switch_tab", "browser_list_tab", "browser_close_tab",
+  "browser_get_network_log", "browser_get_performance_log", "browser_learn_api",
+  "api_store", "api_list", "api_call", "api_test"
+]
 
 [[models]]
-name = "nemotron-super-49b"
-base_url = "http://127.0.0.1:8005"
-model_id = "nemotron-super-49b-v1.5"
+name = "gpt-oss-120b"
+base_url = "http://127.0.0.1:8008"
+model_id = "gpt-oss-120b"
+strip_thinking_tags = true
 max_tokens = 4096
-temperature = 0.6
-
-[[models]]
-name = "qwen3-coder-30b"
-base_url = "http://127.0.0.1:8006"
-model_id = "qwen3-coder-30b-a3b"
-max_tokens = 4096
-temperature = 0.7
+temperature = 1.0
+mcp_servers = ["hands", "workflow"]
+tool_filter = [
+  "browser_attach", "browser_navigate", "browser_extract_content", "browser_get_text",
+  "browser_a11y_snapshot", "browser_click", "browser_type", "browser_screenshot",
+  "browser_new_tab", "browser_switch_tab", "browser_list_tab", "browser_close_tab",
+  "browser_get_network_log", "browser_get_performance_log", "browser_learn_api",
+  "api_store", "api_list", "api_call", "api_test"
+]
 
 [[mcp_servers]]
 name = "hands"
@@ -35,11 +45,13 @@ command = "/root/workflow/target/release/workflow"
 args = []
 env = { WORKFLOW_PLAIN_CREDS_OK = "1" }
 
-[[mcp_servers]]
-name = "model_router"
-command = "/root/model-router/target/release/model-router"
-args = []
-env = { MODEL_ROUTER_BASE_URL = "http://127.0.0.1:8003", MODEL_ROUTER_PLANNER_MODEL = "nemotron-super-49b", MODEL_ROUTER_CODER_MODEL = "qwen3-coder-30b-gguf", MODEL_ROUTER_CHECKER_MODEL = "nemotron-super-49b", RUST_LOG = "info" }
+# model_router commented out - nemotron-3-super-120b was killed 2026-05-09
+# Re-enable after pointing env vars at a live model
+# [[mcp_servers]]
+# name = "model_router"
+# command = "/root/model-router/target/release/model-router"
+# args = []
+# env = { MODEL_ROUTER_BASE_URL = "http://127.0.0.1:8003", MODEL_ROUTER_PLANNER_MODEL = "nemotron-3-super-120b", MODEL_ROUTER_CODER_MODEL = "qwen3-coder-30b-gguf", MODEL_ROUTER_CHECKER_MODEL = "nemotron-3-super-120b", RUST_LOG = "info" }
 
 [[mcp_servers]]
 name = "transcripts"
