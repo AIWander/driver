@@ -33,3 +33,36 @@ args = []
 name = "workflow"
 command = "/root/workflow/target/release/workflow"
 args = []
+env = { WORKFLOW_PLAIN_CREDS_OK = "1" }
+
+[[mcp_servers]]
+name = "model_router"
+command = "/root/model-router/target/release/model-router"
+args = []
+env = { MODEL_ROUTER_BASE_URL = "http://127.0.0.1:8003", MODEL_ROUTER_PLANNER_MODEL = "nemotron-super-49b", MODEL_ROUTER_CODER_MODEL = "qwen3-coder-30b-gguf", MODEL_ROUTER_CHECKER_MODEL = "nemotron-super-49b", RUST_LOG = "info" }
+
+[[mcp_servers]]
+name = "transcripts"
+command = "/root/mcp-transcripts/target/release/mcp-transcripts"
+args = []
+env = { TRANSCRIPT_DIR = "/opt/cpc/transcripts" }
+
+[[mcp_servers]]
+name = "container_exec"
+command = "/root/mcp-container-exec/target/release/mcp-container-exec"
+args = []
+
+[[mcp_servers]]
+name = "host_ops"
+command = "/root/mcp-host-ops/target/release/mcp-host-ops"
+args = []
+
+[[mcp_servers]]
+name = "httpbin_typed_demo"
+command = "/root/.cpc/graduated/mcp-httpbin-typed-demo/target/release/httpbin-typed-demo"
+args = []
+
+[[mcp_servers]]
+name = "httpbin_post_demo"
+command = "/root/.cpc/graduated/mcp-httpbin-post-demo/target/release/httpbin-post-demo"
+args = []
