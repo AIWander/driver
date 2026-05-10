@@ -6,6 +6,8 @@ use std::path::Path;
 #[derive(Debug, Clone, Deserialize)]
 pub struct DriverConfig {
     #[serde(default)]
+    pub reranker: Option<RerankerConfig>,
+    #[serde(default)]
     pub server: ServerConfig,
     #[serde(default)]
     pub mcp_servers: Vec<McpServerConfig>,
@@ -131,4 +133,31 @@ impl DriverConfig {
             .find(|s| s.name == name)
             .with_context(|| format!("mcp_server '{}' not found in config", name))
     }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RerankerConfig {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default = "default_reranker_base_url")]
+    pub base_url: String,
+    #[serde(default = "default_reranker_model_id")]
+    pub model_id: String,
+    #[serde(default = "default_min_tool_result_bytes")]
+    pub min_tool_result_bytes: usize,
+    #[serde(default = "default_max_summary_tokens")]
+    pub max_summary_tokens: u32,
+}
+
+fn default_reranker_base_url() -> String {
+    "http://127.0.0.1:8010".to_string()
+}
+fn default_reranker_model_id() -> String {
+    "qwen3-coder-30b".to_string()
+}
+fn default_min_tool_result_bytes() -> usize {
+    2048
+}
+fn default_max_summary_tokens() -> u32 {
+    800
 }

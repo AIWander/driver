@@ -8,6 +8,7 @@ mod mcp;
 mod openai;
 mod policy;
 mod registry;
+mod reranker;
 mod report;
 mod run;
 mod serve;

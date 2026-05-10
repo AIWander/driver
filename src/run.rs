@@ -102,6 +102,7 @@ pub async fn run_task(
         &openai_client,
         &mut reg,
         sink,
+        driver_config.reranker.as_ref(),
     )
     .await;
 

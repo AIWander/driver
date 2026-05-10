@@ -78,3 +78,10 @@ args = []
 name = "httpbin_post_demo"
 command = "/root/.cpc/graduated/mcp-httpbin-post-demo/target/release/httpbin-post-demo"
 args = []
+
+[reranker]
+enabled = true
+base_url = "http://127.0.0.1:8010"
+model_id = "qwen3-coder-30b"
+min_tool_result_bytes = 2048
+max_summary_tokens = 800

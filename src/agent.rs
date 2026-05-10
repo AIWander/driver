@@ -2,7 +2,8 @@ use anyhow::{bail, Result};
 use serde_json::json;
 use tracing::info;
 
-use crate::config::ModelConfig;
+use crate::config::{ModelConfig, RerankerConfig};
+use crate::reranker;
 use crate::events::EventSink;
 use crate::openai::{ChatCompletionRequest, Message, OpenAIClient, Usage};
 use crate::registry::ToolRegistry;
@@ -15,6 +16,7 @@ pub async fn run_agent_loop(
     client: &OpenAIClient,
     registry: &mut ToolRegistry,
     events: &mut dyn EventSink,
+    reranker_cfg: Option<&RerankerConfig>,
 ) -> Result<AgentResult> {
     let tools_for_llm = registry.to_openai_tools();
     let tool_names: Vec<String> = tools_for_llm
@@ -171,9 +173,52 @@ pub async fn run_agent_loop(
 
             let result = registry.dispatch(&call.function.name, args).await;
 
-            let (ok, content_str) = match result {
+            let (ok, raw_content) = match result {
                 Ok(r) => (!r.is_error, r.text_content()),
                 Err(e) => (false, format!("Error: {}", e)),
+            };
+
+            // Rerank large tool results via Qwen to compress context
+            let final_content = if ok {
+                if let Some(rcfg) = reranker_cfg {
+                    if rcfg.enabled && raw_content.len() >= rcfg.min_tool_result_bytes {
+                        match reranker::rerank_tool_result(
+                            user_prompt,
+                            &call.function.name,
+                            &call.function.arguments,
+                            &raw_content,
+                            rcfg,
+                        )
+                        .await
+                        {
+                            Ok(Some(compressed)) => {
+                                let saved = raw_content.len().saturating_sub(compressed.len());
+                                events.log(
+                                    "rerank",
+                                    json!({
+                                        "iteration": iterations,
+                                        "tool": call.function.name,
+                                        "raw_bytes": raw_content.len(),
+                                        "compressed_bytes": compressed.len(),
+                                        "saved_bytes": saved,
+                                    }),
+                                )?;
+                                compressed
+                            }
+                            Ok(None) => raw_content.clone(),
+                            Err(e) => {
+                                tracing::warn!("rerank failed for {}: {}", call.function.name, e);
+                                raw_content.clone()
+                            }
+                        }
+                    } else {
+                        raw_content.clone()
+                    }
+                } else {
+                    raw_content.clone()
+                }
+            } else {
+                raw_content.clone()
             };
 
             events.log(
@@ -182,13 +227,13 @@ pub async fn run_agent_loop(
                     "iteration": iterations,
                     "id": call.id,
                     "ok": ok,
-                    "content": content_str
+                    "content": final_content
                 }),
             )?;
 
             messages.push(Message {
                 role: "tool".to_string(),
-                content: Some(content_str),
+                content: Some(final_content),
                 tool_calls: None,
                 tool_call_id: Some(call.id.clone()),
             });
