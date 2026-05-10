@@ -1,6 +1,5 @@
 use anyhow::{bail, Result};
 use serde_json::json;
-use chrono::Utc;
 use tracing::info;
 
 use crate::config::{ModelConfig, RerankerConfig};
