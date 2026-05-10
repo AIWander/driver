@@ -9,6 +9,7 @@ mod openai;
 mod policy;
 mod registry;
 mod reranker;
+mod tokens;
 mod report;
 mod run;
 mod serve;

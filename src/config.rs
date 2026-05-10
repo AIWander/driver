@@ -76,6 +76,12 @@ pub struct ModelConfig {
     pub auto_tool_choice: bool,
     #[serde(default)]
     pub system_prompt_files: Vec<String>,
+
+    #[serde(default = "default_context_window")]
+    pub context_window: u32,
+
+    #[serde(default = "default_compaction_threshold")]
+    pub compaction_threshold: f32,
 }
 
 fn default_system_prompt_strategy() -> String {
@@ -89,6 +95,13 @@ fn default_temperature() -> f32 {
 }
 fn default_auto_tool_choice() -> bool {
     true
+}
+
+fn default_context_window() -> u32 {
+    32768
+}
+fn default_compaction_threshold() -> f32 {
+    0.75
 }
 
 #[derive(Debug, Clone, Deserialize)]
